@@ -31,7 +31,11 @@ class CalculatorViewModel : ViewModel() {
                 is CalculatorOperation.Divide -> number1 / number2
                 null -> return
             }
-            state = state.copy(number1 = result.toString().take(15), number2 = "", operation = null)
+            state = if (result == result.toInt().toDouble()){
+                state.copy(number1 = result.toInt().toString().take(15), number2 = "", operation = null)
+            } else{
+                state.copy(number1 = result.toString().take(15), number2 = "", operation = null)
+            }
         }
     }
 
