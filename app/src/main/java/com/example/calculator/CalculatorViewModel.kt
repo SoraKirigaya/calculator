@@ -9,18 +9,24 @@ class CalculatorViewModel : ViewModel() {
     var state by mutableStateOf(CalculatorState())
         private set
 
-    private var number1 : String= ""
-    private var number2 : String= ""
+    private var number1: String = ""
+    private var number2: String = ""
 
     fun onAction(action: CalculatorActions) {
         when (action) {
             is CalculatorActions.Number -> enterNumber(action.number)
             is CalculatorActions.Decimal -> enterDecimal()
-            is CalculatorActions.Clear -> state = CalculatorState()
+            is CalculatorActions.Clear -> performClear()
             is CalculatorActions.Operation -> enterOperation(action.operation)
             is CalculatorActions.Calculate -> performCalculation()
             is CalculatorActions.Delete -> performDeletion()
         }
+    }
+
+    private fun performClear() {
+        number1 = ""
+        number2 = ""
+        state = CalculatorState()
     }
 
     private fun performCalculation() {
@@ -34,10 +40,10 @@ class CalculatorViewModel : ViewModel() {
                 is CalculatorOperation.Divide -> numberCalc1 / numberCalc2
                 null -> return
             }
-            state = if (total == total.toInt().toDouble()){
+            state = if (total == total.toInt().toDouble()) {
                 state.copy(result = total.toInt().toString().take(15), operation = null)
 
-            } else{
+            } else {
                 state.copy(result = total.toString().take(15), operation = null)
             }
             number1 = total.toString()
@@ -46,25 +52,38 @@ class CalculatorViewModel : ViewModel() {
     }
 
     private fun performDeletion() {
-        when {
-            number2.isNotBlank() -> state = state.copy(
-                result = number2.dropLast(1)
-            )
-
-            state.operation != null -> state = state.copy(
-                operation = null
-            )
-
-            number1.isNotBlank() -> state = state.copy(
-                result = number1.dropLast(1)
-            )
+        if (number2.isNotBlank()) {
+            number2 = number2.dropLast(1)
+            state = state.copy(result = number2)
         }
+        if (state.operation != null) {
+            state = state.copy(operation = null)
+        }
+        if (number1.isNotBlank()) {
+            number1= number1.dropLast(1)
+            state = state.copy(result = number1)
+        }
+//        when {
+//            number2.isNotBlank() ->
+//                number2.dropLast(1)
+//                state = state.copy(
+//                result = number2.dropLast(1)
+//            )
+//
+//            state.operation != null -> state = state.copy(
+//                operation = null
+//            )
+//
+//            number1.isNotBlank() -> state = state.copy(
+//                result = number1.dropLast(1)
+//            )
+//        }
     }
 
     private fun enterOperation(operation: CalculatorOperation) {
         if (number1.isNotBlank() && number2.isBlank()) {
             state = state.copy(operation = operation)
-        } else if(number1.isNotBlank() && number2.isNotBlank()) {
+        } else if (number1.isNotBlank() && number2.isNotBlank()) {
             performCalculation()
             state = state.copy(operation = operation)
         }
@@ -72,11 +91,13 @@ class CalculatorViewModel : ViewModel() {
 
     private fun enterDecimal() {
         if (state.operation == null && !number1.contains(".") && number1.isNotBlank()) {
-            state = state.copy(result = number1 + ".")
+            number1 += "."
+            state = state.copy(result = number1)
             return
         }
         if (!number2.contains(".") && number2.isNotBlank()) {
-            state = state.copy(result = number2 + ".")
+            number2 += "."
+            state = state.copy(result = number2)
         }
     }
 
