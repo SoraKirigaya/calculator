@@ -11,6 +11,7 @@ class CalculatorViewModel : ViewModel() {
 
     private var number1: String = ""
     private var number2: String = ""
+//    private var didCalculation: Boolean = false
 
     fun onAction(action: CalculatorActions) {
         when (action) {
@@ -48,36 +49,19 @@ class CalculatorViewModel : ViewModel() {
             }
             number1 = total.toString()
             number2 = ""
+
         }
     }
 
     private fun performDeletion() {
-        if (number2.isNotBlank()) {
+        if (number2.isNotBlank() && number1.isNotBlank()) {
             number2 = number2.dropLast(1)
             state = state.copy(result = number2)
         }
-        if (state.operation != null) {
-            state = state.copy(operation = null)
-        }
-        if (number1.isNotBlank()) {
-            number1= number1.dropLast(1)
+        if (number1.isNotBlank() && number2.isBlank()) {
+            number1 = number1.dropLast(1)
             state = state.copy(result = number1)
         }
-//        when {
-//            number2.isNotBlank() ->
-//                number2.dropLast(1)
-//                state = state.copy(
-//                result = number2.dropLast(1)
-//            )
-//
-//            state.operation != null -> state = state.copy(
-//                operation = null
-//            )
-//
-//            number1.isNotBlank() -> state = state.copy(
-//                result = number1.dropLast(1)
-//            )
-//        }
     }
 
     private fun enterOperation(operation: CalculatorOperation) {
@@ -93,7 +77,6 @@ class CalculatorViewModel : ViewModel() {
         if (state.operation == null && !number1.contains(".") && number1.isNotBlank()) {
             number1 += "."
             state = state.copy(result = number1)
-            return
         }
         if (!number2.contains(".") && number2.isNotBlank()) {
             number2 += "."
@@ -106,16 +89,26 @@ class CalculatorViewModel : ViewModel() {
             if (number1.length >= MAX_NUM_LENGTH) {
                 return
             }
-            number1 += number
-            state = state.copy(result = number1)
-            return
-        } else {
+            if (number1 == "0") {
+                number1 = number.toString()
+                state = state.copy(result = number1)
+            } else {
+                number1 += number
+                state = state.copy(result = number1)
+            }
+        } else if (state.operation != null) {
             if (number2.length >= MAX_NUM_LENGTH) {
                 return
             }
+            if (number2 == "0") {
+                number2 = number.toString()
+                state = state.copy(result = number2)
+
+            } else {
+                number2 += number
+                state = state.copy(result = number2)
+            }
         }
-        number2 += number
-        state = state.copy(result = number2)
     }
 
     companion object {
