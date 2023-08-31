@@ -11,7 +11,7 @@ class CalculatorViewModel : ViewModel() {
 
     private var number1: String = ""
     private var number2: String = ""
-//    private var didCalculation: Boolean = false
+    private var didCalculation = false
 
     fun onAction(action: CalculatorActions) {
         when (action) {
@@ -49,18 +49,24 @@ class CalculatorViewModel : ViewModel() {
             }
             number1 = total.toString()
             number2 = ""
-
+            didCalculation = true
         }
     }
 
     private fun performDeletion() {
-        if (number2.isNotBlank() && number1.isNotBlank()) {
-            number2 = number2.dropLast(1)
-            state = state.copy(result = number2)
-        }
-        if (number1.isNotBlank() && number2.isBlank()) {
-            number1 = number1.dropLast(1)
-            state = state.copy(result = number1)
+        if (didCalculation) {
+            return
+        } else {
+            if (number2.isNotBlank() && number1.isNotBlank()) {
+                number2 = number2.dropLast(1)
+                state = state.copy(result = number2)
+            }
+            if (number2.isBlank() && state.operation != null) {
+                return
+            } else if (number1.isNotBlank() && number2.isBlank()) {
+                number1 = number1.dropLast(1)
+                state = state.copy(result = number1)
+            }
         }
     }
 
@@ -85,6 +91,10 @@ class CalculatorViewModel : ViewModel() {
     }
 
     private fun enterNumber(number: Int) {
+        if (didCalculation && state.operation == null) {
+            resetNumber()
+            didCalculation = false
+        }
         if (state.operation == null) {
             if (number1.length >= MAX_NUM_LENGTH) {
                 return
@@ -95,6 +105,7 @@ class CalculatorViewModel : ViewModel() {
             } else {
                 number1 += number
                 state = state.copy(result = number1)
+                didCalculation = false
             }
         } else if (state.operation != null) {
             if (number2.length >= MAX_NUM_LENGTH) {
@@ -103,12 +114,18 @@ class CalculatorViewModel : ViewModel() {
             if (number2 == "0") {
                 number2 = number.toString()
                 state = state.copy(result = number2)
-
             } else {
                 number2 += number
                 state = state.copy(result = number2)
+                didCalculation = false
             }
         }
+    }
+
+    private fun resetNumber() {
+        number1 = ""
+        number2 = ""
+        state = state.copy(operation = null)
     }
 
     companion object {
