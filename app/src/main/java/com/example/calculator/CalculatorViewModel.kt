@@ -4,6 +4,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import java.text.NumberFormat
+import java.util.Locale
 
 class CalculatorViewModel : ViewModel() {
     var state by mutableStateOf(CalculatorState())
@@ -30,6 +32,11 @@ class CalculatorViewModel : ViewModel() {
         state = CalculatorState()
     }
 
+    private fun formatNumber(number: Double): String {
+        val numberFormat = NumberFormat.getNumberInstance(Locale.US)
+        return numberFormat.format(number)
+    }
+
     private fun performCalculation() {
         val numberCalc1 = number1.toDoubleOrNull()
         val numberCalc2 = number2.toDoubleOrNull()
@@ -42,10 +49,10 @@ class CalculatorViewModel : ViewModel() {
                 null -> return
             }
             state = if (total == total.toInt().toDouble()) {
-                state.copy(result = total.toInt().toString().take(15), operation = null)
+                state.copy(result = formatNumber(total).take(15), operation = null)
 
             } else {
-                state.copy(result = total.toString().take(15), operation = null)
+                state.copy(result = formatNumber(total).take(15), operation = null)
             }
             number1 = total.toString()
             number2 = ""
@@ -59,12 +66,18 @@ class CalculatorViewModel : ViewModel() {
         } else {
             if (number2.isNotBlank() && number1.isNotBlank()) {
                 number2 = number2.dropLast(1)
+                if(number2 == ""){
+                    number2 = "0"
+                }
                 state = state.copy(result = number2)
             }
             if (number2.isBlank() && state.operation != null) {
                 return
             } else if (number1.isNotBlank() && number2.isBlank()) {
                 number1 = number1.dropLast(1)
+                if(number1 == ""){
+                    number1 = "0"
+                }
                 state = state.copy(result = number1)
             }
         }
@@ -91,6 +104,7 @@ class CalculatorViewModel : ViewModel() {
     }
 
     private fun enterNumber(number: Int) {
+        //Check if user did calculation: if yes, user starts from  the first number
         if (didCalculation && state.operation == null) {
             resetNumber()
             didCalculation = false
@@ -101,10 +115,10 @@ class CalculatorViewModel : ViewModel() {
             }
             if (number1 == "0") {
                 number1 = number.toString()
-                state = state.copy(result = number1)
+                state = state.copy(result = formatNumber(number1.toDouble()))
             } else {
                 number1 += number
-                state = state.copy(result = number1)
+                state = state.copy(result = formatNumber(number1.toDouble()))
                 didCalculation = false
             }
         } else if (state.operation != null) {
@@ -113,10 +127,10 @@ class CalculatorViewModel : ViewModel() {
             }
             if (number2 == "0") {
                 number2 = number.toString()
-                state = state.copy(result = number2)
+                state = state.copy(result = formatNumber(number2.toDouble()))
             } else {
                 number2 += number
-                state = state.copy(result = number2)
+                state = state.copy(result = formatNumber(number2.toDouble()))
                 didCalculation = false
             }
         }
